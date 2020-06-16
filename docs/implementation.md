@@ -17,9 +17,9 @@ block gets encrypted as far as it is found filled with enough data.
 
 Block cipher library architecture consists of several parts listed below:
 
-1. Algorithms
+1. Encryption/Decryption Algorithms
 2. Stream Processors
-3. Cipher Algorithms
+3. Block Cipher Policies
 4. Accumulators
 5. Value Processors
 
@@ -29,9 +29,9 @@ bgcolor="#222222"
 rankdir="TB"
 node [shape="box"]
 
-  a [label="Algorithms" color="#F5F2F1" fontcolor="#F5F2F1" URL="@ref block_cipher_algorithms"];
+  a [label="Encryption/Decryption Algorithms" color="#F5F2F1" fontcolor="#F5F2F1" URL="@ref block_cipher_algorithms"];
   b [label="Stream Processors" color="#F5F2F1" fontcolor="#F5F2F1" URL="@ref block_cipher_stream"];
-  c [label="Cipher Algorithms" color="#F5F2F1" fontcolor="#F5F2F1" URL="@ref block_cipher_policies"];
+  c [label="Block Cipher Policies" color="#F5F2F1" fontcolor="#F5F2F1" URL="@ref block_cipher_policies"];
   d [label="Accumulators" color="#F5F2F1" fontcolor="#F5F2F1" URL="@ref block_cipher_accumulators"];
   e [label="Value Processors" color="#F5F2F1" fontcolor="#F5F2F1" URL="@ref block_cipher_value"];
   
@@ -42,7 +42,7 @@ node [shape="box"]
 }
 @enddot
 
-## Algorithms ## {#block_cipher_algorithms}
+## Encryption/Decryption Algorithms ## {#block_cipher_algorithms}
 
 Implementation of a library is considered to be highly compliant with STL. So 
 the crucial point is to have ciphers to be usable in the same way as STL 
@@ -241,9 +241,9 @@ public:
 This part is handled internally with `stream_processor` configured for each 
 particular cipher. 
    
-## Block Cipher Algorithms ## {#block_cipher_policies}
+## Block Cipher Policies ## {#block_cipher_policies}
 
-Block cipher algorithms architecturally are stateful policies, which structural 
+Block cipher policies architecturally are stateful. Its structural 
 contents are regulated by concepts and runtime content is a scheduled key data. 
 Block cipher policies are required to be compliant with 
 [`BlockCipher` concept](@ref block_cipher_concept).
