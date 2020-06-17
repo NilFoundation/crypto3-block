@@ -29,20 +29,22 @@ bgcolor="#222222"
 rankdir="TB"
 node [shape="box"]
 
-  a [label="Encryption/Decryption Algorithms" color="#F5F2F1" fontcolor="#F5F2F1" URL="@ref block_cipher_algorithms"];
-  b [label="Stream Processors" color="#F5F2F1" fontcolor="#F5F2F1" URL="@ref block_cipher_stream"];
-  c [label="Block Cipher Policies" color="#F5F2F1" fontcolor="#F5F2F1" URL="@ref block_cipher_policies"];
-  d [label="Accumulators" color="#F5F2F1" fontcolor="#F5F2F1" URL="@ref block_cipher_accumulators"];
-  e [label="Value Processors" color="#F5F2F1" fontcolor="#F5F2F1" URL="@ref block_cipher_value"];
+  a [label="Encryption/Decryption Algorithms" color="#F5F2F1" fontcolor="#F5F2F1" URL="@ref block_ciphers_algorithms"];
+  b [label="Stream Processors" color="#F5F2F1" fontcolor="#F5F2F1" URL="@ref block_ciphers_stream"];
+  c [label="Data Type Conversion" color="#F5F2F1" fontcolor="#F5F2F1" URL="@ref block_ciphers_data"];
+  d [label="Block Cipher Policies" color="#F5F2F1" fontcolor="#F5F2F1" URL="@ref block_ciphers_policies"];
+  e [label="Accumulators" color="#F5F2F1" fontcolor="#F5F2F1" URL="@ref block_ciphers_accumulators"];
+  f [label="Value Processors" color="#F5F2F1" fontcolor="#F5F2F1" URL="@ref block_ciphers_value"];
   
   a -> b;
   b -> c;
   c -> d;
   d -> e;
+  e -> f;
 }
 @enddot
 
-## Encryption/Decryption Algorithms ## {#block_cipher_algorithms}
+## Encryption/Decryption Algorithms ## {#block_ciphers_algorithms}
 
 Implementation of a library is considered to be highly compliant with STL. So 
 the crucial point is to have ciphers to be usable in the same way as STL 
@@ -105,7 +107,7 @@ set with [`block`](@ref accumulators::block) accumulator inside initialized
 with [`BlockCipher`](@ref block_cipher_concept) initialized with `KeyType` 
 retrieved from input `KeyIterator` instances.
 
-## Stream Data Processing ## {#block_cipher_stream}
+## Stream Data Processing ## {#block_ciphers_stream}
 
 Block ciphers are usually defined for processing `Integral` value typed byte 
 sequences of specific size packed in blocks (e.g. `rijndael` is defined for 
@@ -185,7 +187,7 @@ converts them and passes to `AccumulatorSet` reference as cipher input of
 format required. The rest of data not even to block size gets converted too and 
 fed value by value to the same `AccumulatorSet` reference.
 
-## Data Type Conversion ## {#block_cipher_data}
+## Data Type Conversion ## {#block_ciphers_data}
  
 Since block cipher algorithms are usually defined for `Integral` types or byte 
 sequences of unique format for each cipher, encryption function being generic 
@@ -241,7 +243,7 @@ public:
 This part is handled internally with `stream_processor` configured for each 
 particular cipher. 
    
-## Block Cipher Policies ## {#block_cipher_policies}
+## Block Cipher Policies ## {#block_ciphers_policies}
 
 Block cipher policies architecturally are stateful. Its structural 
 contents are regulated by concepts and runtime content is a scheduled key data. 
@@ -272,14 +274,14 @@ data (usually it is represented by `block_type` typedef) per call.
 Such functions are stateful with respect to key schedule data represented by 
 `key_schedule_type` and generated while block cipher constructor call.
 
-## Accumulators ## {#block_cipher_accumulators}
+## Accumulators ## {#block_ciphers_accumulators}
 
 Encryption contains an accumulation step, which is implemented with 
 [Boost.Accumulators](https://boost.org/libs/accumulators) library.
 
 All the concepts are held.
 
-Block ciphers contains pre-defined [`block::accumulator_set`](@ref block::accumulator_set), 
+Block ciphers contain pre-defined [`block::accumulator_set`](@ref block::accumulator_set), 
 which is a `boost::accumulator_set` with pre-filled 
 [`block` accumulator](@ref accumulators::block).
 
@@ -317,7 +319,7 @@ std::string hash = extract::hash<hash::sha2<256>>(acc);
 std::string ciphertext = extract::block<block::rijndael<128, 128>>(acc);
 ```
 
-## Value Postprocessors ## {#block_cipher_value}
+## Value Postprocessors ## {#block_ciphers_value}
 
 Since the accumulator output type is strictly tied to [`digest_type`](@ref block::digest_type)
 of particular [`BlockCipher`](@ref block_cipher_concept) policy, the output 
