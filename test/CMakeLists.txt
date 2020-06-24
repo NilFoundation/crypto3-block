@@ -41,6 +41,7 @@ set(TESTS_NAMES
     "rijndael"
     "md4"
     "md5"
+    "misty1"
     "shacal"
     "shacal2"
     )
