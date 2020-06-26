@@ -44,6 +44,7 @@ set(TESTS_NAMES
     "md5"
     "shacal"
     "shacal2"
+    "xtea"
     )
 
 foreach(TEST_NAME ${TESTS_NAMES})
