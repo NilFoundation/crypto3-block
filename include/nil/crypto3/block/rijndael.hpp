@@ -1,5 +1,6 @@
 //---------------------------------------------------------------------------//
 // Copyright (c) 2018-2020 Mikhail Komarov <nemo@nil.foundation>
+// Copyright (c) 2020 Nikita Kaskov <nbering@nil.foundation>
 //
 // Distributed under the Boost Software License, Version 1.0
 // See accompanying file LICENSE_1_0.txt or copy at
@@ -21,7 +22,7 @@
 
 #include <nil/crypto3/block/detail/rijndael/rijndael_ni_impl.hpp>
 
-#elif defined(CRYPTO3_HAS_RIJNDAEL_SSSE3)
+#elif defined(CRYPTO3_HAS_RIJNDAEL_SSSE3) || BOOST_HW_SIMD_X86 >= BOOST_HW_SIMD_X86_SSSE3_VERSION
 
 #include <nil/crypto3/block/detail/rijndael/rijndael_ssse3_impl.hpp>
 
@@ -107,7 +108,7 @@ namespace nil {
                     typename std::conditional<BlockBits == 128 && (KeyBits == 128 || KeyBits == 192 || KeyBits == 256),
 #if defined(CRYPTO3_HAS_RIJNDAEL_NI)
                                               detail::rijndael_ni_impl<KeyBits, BlockBits, policy_type>,
-#elif defined(CRYPTO3_HAS_RIJNDAEL_SSSE3)
+#elif defined(CRYPTO3_HAS_RIJNDAEL_SSSE3) || BOOST_HW_SIMD_X86 >= BOOST_HW_SIMD_X86_SSSE3_VERSION
                                               detail::rijndael_ssse3_impl<KeyBits, BlockBits, policy_type>,
 #elif defined(CRYPTO3_HAS_RIJNDAEL_ARMV8)
                                               detail::rijndael_armv8_impl<KeyBits, BlockBits, policy_type>,
@@ -129,7 +130,7 @@ namespace nil {
 
                 constexpr static const std::size_t key_bits = policy_type::key_bits;
                 constexpr static const std::size_t key_words = policy_type::key_words;
-                typedef typename policy_type::key_schedule_word_type key_schedule_word_type;
+                //                typedef typename policy_type::key_schedule_word_type key_schedule_word_type;
                 typedef typename policy_type::key_type key_type;
 
                 constexpr static const std::size_t block_bits = policy_type::block_bits;
@@ -139,25 +140,17 @@ namespace nil {
                 constexpr static const std::uint8_t rounds = policy_type::rounds;
                 typedef typename policy_type::round_constants_type round_constants_type;
 
-                template<template<typename, typename> class Mode, typename StateAccumulator, std::size_t ValueBits,
-                         typename Padding>
+                template<class Mode, typename StateAccumulator, std::size_t ValueBits>
                 struct stream_processor {
                     struct params_type {
-                        typedef typename stream_endian::little_octet_big_bit endian_type;
-
                         constexpr static const std::size_t value_bits = ValueBits;
                         constexpr static const std::size_t length_bits = policy_type::word_bits * 2;
                     };
 
-                    typedef block_stream_processor<Mode<rijndael<KeyBits, BlockBits>, Padding>, StateAccumulator,
-                                                   params_type>
-                        type_;
-#ifdef CRYPTO3_BLOCK_NO_HIDE_INTERNAL_TYPES
-                    typedef type_ type;
-#else
-                    struct type : type_ {};
-#endif
+                    typedef block_stream_processor<Mode, StateAccumulator, params_type> type;
                 };
+
+                typedef typename stream_endian::little_octet_big_bit endian_type;
 
                 rijndael(const key_type &key) : encryption_key({0}), decryption_key({0}) {
                     impl_type::schedule_key(key, encryption_key, decryption_key);
@@ -172,7 +165,7 @@ namespace nil {
                     return impl_type::encrypt_block(plaintext, encryption_key);
                 }
 
-                block_type decrypt(const block_type &plaintext) const {
+                inline block_type decrypt(const block_type &plaintext) const {
                     return impl_type::decrypt_block(plaintext, decryption_key);
                 }
 

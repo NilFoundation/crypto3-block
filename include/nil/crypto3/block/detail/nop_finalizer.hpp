@@ -6,26 +6,21 @@
 // http://www.boost.org/LICENSE_1_0.txt
 //---------------------------------------------------------------------------//
 
-#ifndef CRYPTO3_GOST_28147_89_PARAMETERS_HPP
-#define CRYPTO3_GOST_28147_89_PARAMETERS_HPP
-
-#include <array>
-
-#include <boost/integer.hpp>
+#ifndef CRYPTO3_BLOCK_NOP_FINALIZER_HPP
+#define CRYPTO3_BLOCK_NOP_FINALIZER_HPP
 
 namespace nil {
     namespace crypto3 {
         namespace block {
             namespace detail {
-                struct gost_28147_89_parameters {
-                    typedef uint8_t byte_type;
-
-                    constexpr static const std::size_t parameters_size = 64;
-                    typedef std::array<byte_type, parameters_size> parameters_type;
+                struct nop_finalizer {
+                    template<typename T>
+                    void operator()(T &) {
+                    }
                 };
             }    // namespace detail
         }        // namespace block
     }            // namespace crypto3
 }    // namespace nil
 
-#endif    // CRYPTO3_GOST_28147_89_POLICY_HPP
+#endif    // CRYPTO3_BLOCK_NOP_FINALIZER_HPP

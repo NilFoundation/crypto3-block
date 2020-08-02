@@ -6,11 +6,12 @@
 # http://www.boost.org/LICENSE_1_0.txt
 #---------------------------------------------------------------------------#
 
-cmake_minimum_required(VERSION 2.8.11)
+cmake_minimum_required(VERSION 3.12.4)
 
-cmake_policy(SET CMP0042 NEW)
 cmake_policy(SET CMP0028 NEW)
+cmake_policy(SET CMP0042 NEW)
 cmake_policy(SET CMP0048 NEW)
+cmake_policy(SET CMP0057 NEW)
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake"
      "${CMAKE_CURRENT_LIST_DIR}/cmake/packages"
@@ -20,11 +21,27 @@ include(CMConfig)
 include(CMDeploy)
 include(CMSetupVersion)
 
-if(NOT ${CMAKE_WORKSPACE_NAME} STREQUAL crypto3)
+if(NOT CMAKE_WORKSPACE_NAME OR NOT ("${CMAKE_WORKSPACE_NAME}" STREQUAL "crypto3"))
     cm_workspace(crypto3)
 endif()
 
 cm_project(block WORKSPACE_NAME ${CMAKE_WORKSPACE_NAME} LANGUAGES C CXX)
+
+macro(cm_find_package NAME)
+    if(NOT "${NAME}" MATCHES "^${CMAKE_WORKSPACE_NAME}_.*$" AND NOT "${NAME}" STREQUAL CM)
+        find_package(${ARGV})
+    else()
+        set(${ARGV0}_FOUND ON CACHE BOOL "")
+    endif()
+endmacro()
+
+if(NOT Boost_FOUND)
+    if(BUILD_TESTS)
+        cm_find_package(Boost REQUIRED COMPONENTS container unit_test_framework)
+    else()
+        cm_find_package(Boost REQUIRED COMPONENTS container)
+    endif()
+endif()
 
 include(TargetArchitecture)
 include(TargetConfiguration)
@@ -32,6 +49,8 @@ include(PlatformConfiguration)
 
 include(CheckSSE)
 include(CheckAVX)
+
+cm_find_package(${CMAKE_WORKSPACE_NAME}_block)
 
 option(BUILD_WITH_CCACHE "Build with ccache usage" TRUE)
 option(BUILD_TESTS "Build unit tests" FALSE)
@@ -74,11 +93,9 @@ else()
     target_architecture(CMAKE_TARGET_ARCHITECTURE)
 endif()
 
-define_target_architecture(${CMAKE_PROJECT_NAME} ${CMAKE_TARGET_ARCHITECTURE})
-define_target_endianness(${CMAKE_PROJECT_NAME} ${CMAKE_TARGET_ARCHITECTURE})
-define_target_platform_features(${CMAKE_PROJECT_NAME})
-
-define_target_platform_size(${CMAKE_PROJECT_NAME} ${CMAKE_TARGET_ARCHITECTURE})
+define_target_architecture(${CMAKE_UPPER_WORKSPACE_NAME} ${CMAKE_TARGET_ARCHITECTURE})
+define_target_endianness(${CMAKE_UPPER_WORKSPACE_NAME} ${CMAKE_TARGET_ARCHITECTURE})
+define_target_platform_features(${CMAKE_UPPER_WORKSPACE_NAME})
 
 check_sse()
 check_avx()
@@ -87,8 +104,7 @@ if(NOT Boost_CONTAINER_FOUND OR NOT Boost_FOUND)
     cm_find_package(Boost COMPONENTS container)
 endif()
 
-configure_file(${CMAKE_CURRENT_LIST_DIR}/cmake/build.hpp.in
-               ${CMAKE_BINARY_DIR}/include/nil/${CMAKE_WORKSPACE_NAME}/build.hpp @ONLY)
+set(BUILD_WITH_CONFIGURATION_FILE_DIR "${CMAKE_CURRENT_LIST_DIR}/cmake" CACHE STRING "Directory for build.hpp lookup")
 
 list(APPEND ${CURRENT_PROJECT_NAME}_PUBLIC_HEADERS
      include/nil/crypto3/block/algorithm/encrypt.hpp
@@ -250,7 +266,6 @@ if(CRYPTO3_BLOCK_GOST_28147_89)
          include/nil/crypto3/block/detail/gost_28147_89/gost_28147_89_functions.hpp
          include/nil/crypto3/block/detail/gost_28147_89/gost_28147_89_policy.hpp
          include/nil/crypto3/block/detail/gost_28147_89/gost_28147_89_parameters.hpp
-
          )
 
     add_definitions(-D${CMAKE_UPPER_WORKSPACE_NAME}_HAS_GOST_28147_89)
@@ -377,12 +392,10 @@ if(CRYPTO3_BLOCK_SERPENT)
          )
 
     list(APPEND ${CURRENT_PROJECT_NAME}_PRIVATE_HEADERS
-         ${${CURRENT_PROJECT_NAME}_PRIVATE_SERPENT_HEADERS}
-         )
+         ${${CURRENT_PROJECT_NAME}_PRIVATE_SERPENT_HEADERS})
 
     list(APPEND ${CURRENT_PROJECT_NAME}_SOURCES
-         ${${CURRENT_PROJECT_NAME}_SERPENT_SOURCES}
-         )
+         ${${CURRENT_PROJECT_NAME}_SERPENT_SOURCES})
 endif()
 
 if(CRYPTO3_BLOCK_SHACAL2)
@@ -394,56 +407,44 @@ if(CRYPTO3_BLOCK_SHACAL2)
          include/nil/crypto3/block/detail/shacal/shacal_policy.hpp
          include/nil/crypto3/block/detail/shacal/shacal_functions.hpp
          include/nil/crypto3/block/detail/shacal/shacal1_policy.hpp
-         include/nil/crypto3/block/detail/shacal/shacal2_policy.hpp
-         )
+         include/nil/crypto3/block/detail/shacal/shacal2_policy.hpp)
 
-    list(APPEND ${CURRENT_PROJECT_NAME}_SHACAL2_SOURCES
-
-         )
+    list(APPEND ${CURRENT_PROJECT_NAME}_SHACAL2_SOURCES)
 
     add_definitions(-D${CMAKE_UPPER_WORKSPACE_NAME}_HAS_SHACAL2)
     list(APPEND ${CURRENT_PROJECT_NAME}_PUBLIC_HEADERS
-         ${${CURRENT_PROJECT_NAME}_PUBLIC_SHACAL2_HEADERS}
-         )
+         ${${CURRENT_PROJECT_NAME}_PUBLIC_SHACAL2_HEADERS})
 
     list(APPEND ${CURRENT_PROJECT_NAME}_SOURCES
-         ${${CURRENT_PROJECT_NAME}_SHACAL2_SOURCES}
-         )
+         ${${CURRENT_PROJECT_NAME}_SHACAL2_SOURCES})
 endif()
 
 if(CRYPTO3_BLOCK_SM4)
     list(APPEND ${CURRENT_PROJECT_NAME}_PUBLIC_SM4_HEADERS
          include/nil/crypto3/block/detail/sm4/sm4_functions.hpp
          include/nil/crypto3/block/detail/sm4/sm4_policy.hpp
-         include/nil/crypto3/block/sm4.hpp
-         )
+         include/nil/crypto3/block/sm4.hpp)
 
     add_definitions(-D${CMAKE_UPPER_WORKSPACE_NAME}_HAS_SM4)
     list(APPEND ${CURRENT_PROJECT_NAME}_PUBLIC_HEADERS
-         ${${CURRENT_PROJECT_NAME}_PUBLIC_SM4_HEADERS}
-         )
+         ${${CURRENT_PROJECT_NAME}_PUBLIC_SM4_HEADERS})
 
     list(APPEND ${CURRENT_PROJECT_NAME}_SOURCES
-         ${${CURRENT_PROJECT_NAME}_SM4_SOURCES}
-         )
+         ${${CURRENT_PROJECT_NAME}_SM4_SOURCES})
 endif()
 
 if(CRYPTO3_BLOCK_THREEFISH)
     list(APPEND ${CURRENT_PROJECT_NAME}_THREEFISH_HEADERS
          include/nil/crypto3/block/threefish.hpp
-         include/nil/crypto3/block/detail/threefish/threefish_policy.hpp
-         )
+         include/nil/crypto3/block/detail/threefish/threefish_policy.hpp)
 
-    list(APPEND ${CURRENT_PROJECT_NAME}_THREEFISH_SOURCES
-         )
+    list(APPEND ${CURRENT_PROJECT_NAME}_THREEFISH_SOURCES)
 
     add_definitions(-D${CMAKE_UPPER_WORKSPACE_NAME}_HAS_THREEFISH)
     list(APPEND ${CURRENT_PROJECT_NAME}_PUBLIC_HEADERS
-         ${${CURRENT_PROJECT_NAME}_THREEFISH_HEADERS}
-         )
+         ${${CURRENT_PROJECT_NAME}_THREEFISH_HEADERS})
     list(APPEND ${CURRENT_PROJECT_NAME}_SOURCES
-         ${${CURRENT_PROJECT_NAME}_THREEFISH_SOURCES}
-         )
+         ${${CURRENT_PROJECT_NAME}_THREEFISH_SOURCES})
 endif()
 
 if(CRYPTO3_BLOCK_TWOFISH)
@@ -451,42 +452,34 @@ if(CRYPTO3_BLOCK_TWOFISH)
          include/nil/crypto3/block/twofish.hpp
          include/nil/crypto3/block/detail/twofish/basic_twofish_policy.hpp
          include/nil/crypto3/block/detail/twofish/twofish_policy.hpp
-         include/nil/crypto3/block/detail/twofish/twofish_functions.hpp
-         )
+         include/nil/crypto3/block/detail/twofish/twofish_functions.hpp)
 
     add_definitions(-D${CMAKE_UPPER_WORKSPACE_NAME}_HAS_TWOFISH)
     list(APPEND ${CURRENT_PROJECT_NAME}_PUBLIC_HEADERS
-         ${${CURRENT_PROJECT_NAME}_TWOFISH_HEADERS}
-         )
+         ${${CURRENT_PROJECT_NAME}_TWOFISH_HEADERS})
     list(APPEND ${CURRENT_PROJECT_NAME}_SOURCES
-         ${${CURRENT_PROJECT_NAME}_TWOFISH_SOURCES}
-         )
+         ${${CURRENT_PROJECT_NAME}_TWOFISH_SOURCES})
 endif()
 
 if(CRYPTO3_BLOCK_XTEA)
     list(APPEND ${CURRENT_PROJECT_NAME}_XTEA_HEADERS
          include/nil/crypto3/block/xtea.hpp
          include/nil/crypto3/block/detail/xtea/xtea_functions.hpp
-         include/nil/crypto3/block/detail/xtea/xtea_policy.hpp
-         )
+         include/nil/crypto3/block/detail/xtea/xtea_policy.hpp)
 
     add_definitions(-D${CMAKE_UPPER_WORKSPACE_NAME}_HAS_XTEA)
     list(APPEND ${CURRENT_PROJECT_NAME}_PUBLIC_HEADERS
-         ${${CURRENT_PROJECT_NAME}_XTEA_HEADERS}
-         )
+         ${${CURRENT_PROJECT_NAME}_XTEA_HEADERS})
     list(APPEND ${CURRENT_PROJECT_NAME}_SOURCES
-         ${${CURRENT_PROJECT_NAME}_XTEA_SOURCES}
-         )
+         ${${CURRENT_PROJECT_NAME}_XTEA_SOURCES})
 endif()
 
 list(APPEND ${CURRENT_PROJECT_NAME}_HEADERS
      ${${CURRENT_PROJECT_NAME}_PUBLIC_HEADERS}
-     ${${CURRENT_PROJECT_NAME}_PRIVATE_HEADERS}
-     )
+     ${${CURRENT_PROJECT_NAME}_PRIVATE_HEADERS})
 
 list(APPEND ${CURRENT_PROJECT_NAME}_SOURCES
-     ${${CURRENT_PROJECT_NAME}_UNGROUPED_SOURCES}
-     )
+     ${${CURRENT_PROJECT_NAME}_UNGROUPED_SOURCES})
 
 cm_setup_version(VERSION 0.1.0 PREFIX ${CMAKE_WORKSPACE_NAME}_${CURRENT_PROJECT_NAME})
 
@@ -511,8 +504,11 @@ elseif(${CMAKE_TARGET_ARCHITECTURE} STREQUAL "ppc64")
 endif()
 
 target_link_libraries(${CMAKE_WORKSPACE_NAME}_${CURRENT_PROJECT_NAME} INTERFACE
-                      "$<TARGET_NAME_IF_EXISTS:boost_multiprecision>"
-                      "${Boost_LIBRARIES}")
+
+                      $<TARGET_NAME_IF_EXISTS:boost_config>
+                      $<TARGET_NAME_IF_EXISTS:boost_predef>
+
+                      ${Boost_LIBRARIES})
 
 target_include_directories(${CMAKE_WORKSPACE_NAME}_${CURRENT_PROJECT_NAME} INTERFACE
                            "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
