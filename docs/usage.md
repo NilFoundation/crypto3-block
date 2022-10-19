@@ -55,7 +55,7 @@ int main(int argc, char *argv[]) {
  
 ```
 
-## Stateful encryption
+## Stateful encryption (TODO)
 
 In case of accumulative encryption requirement is present, following example demonstrates 
 [accumulator](@ref block::accumulator_set) usage:
