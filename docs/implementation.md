@@ -10,7 +10,7 @@ Block ciphers usage is usually split to three stages:
 
 This separation defines the implementation architecture.
 
-Some particular cases merge accumulation step with encryption step. This means 
+Some flows merge accumulation step with encryption step. This means 
 block gets encrypted as far as it is found filled with enough data.  
 
 ## Architecture Overview ## {#block_ciphers_architecture}
@@ -92,7 +92,7 @@ The most obvious difference between `std::transform` is a representation of a
 policy defining the particular behaviour of an algorithm. `std::transform` 
 proposes to pass it as a reference to `Functor`, which is also possible in 
 case of [`BlockCipher`](@ref block_cipher_concept) policy used in function 
-already pre-scheduled:
+already pre-scheduled: (TODO: Check)
    
 ```cpp
 template<typename BlockCipher, typename InputIterator, typename KeyIterator, typename OutputIterator>
@@ -110,15 +110,15 @@ retrieved from input `KeyIterator` instances.
 Block ciphers are usually defined for processing `Integral` value typed byte 
 sequences of specific size packed in blocks (e.g. `rijndael` is defined for 
 blocks of words which are actually plain `n`-sized arrays of `uint32_t` ). 
-Input data in the implementation proposed is supposed to be a various-length 
-input stream, which length could be not even to block size.
+Input data in the implementation proposed is a variable-length 
+input stream, whose length could be not meet block size.
   
 This requires an introduction of stream processor specified with particular 
 parameter set unique for each [`BlockCipher`](@ref block_cipher_concept) type, 
 which takes input data stream and gets it split to blocks filled with converted 
 to appropriate size integers (words in the cryptography meaning, not machine words).
   
-Example. Lets assume input data stream consists of 16 bytes as follows.
+Example. Let's assume input data stream consists of 16 bytes as follows.
 
 @dot
 digraph bytes {
@@ -241,17 +241,17 @@ public:
 This part is handled internally with `stream_processor` configured for each 
 particular cipher. 
    
-## Block Cipher Algorithms ## {#block_cipher_policies}
+## Block Cipher Algorithms ## {#block_cipher_policies} (TODO)
 
 Block cipher algorithms architecturally are stateful policies, which structural 
-contents are regulated by concepts and runtime content is a scheduled key data. 
+contents are regulated by concepts and runtime content is a scheduled key data. (TODO)
 Block cipher policies are required to be compliant with 
 [`BlockCipher` concept](@ref block_cipher_concept).
 
 [`BlockCipher`](@ref block_cipher_concept) policies are required to be 
 constructed with particular policy-compliant strictly-typed key data, usually 
 represented by `BlockCipher::key_type`. This means construction of such a policy 
-is quite a heavy task, so this should be handled with care. The result of 
+is quite a complex task, so this should be handled with care. The result of 
 a [`BlockCipher`](@ref block_cipher_concept) construction is filled and 
 strictly-typed key schedule data member. 
 
@@ -265,7 +265,7 @@ block bits, word bits, block words or cipher rounds.
 
 Coming to typedefs contained in policy - they meant to be mostly a fixed-length 
 arrays (usually `std::array`), which guarantees type-safety and no occasional 
-input data length issues.
+input data length issues. (TODO - What is referred here? Creation of algo , any file?)
 
 Functions contained in policy are meant to process one block of strictly-typed 
 data (usually it is represented by `block_type` typedef) per call. 
@@ -277,7 +277,7 @@ Such functions are stateful with respect to key schedule data represented by
 Encryption contains an accumulation step, which is implemented with 
 [Boost.Accumulators](https://boost.org/libs/accumulators) library.
 
-All the concepts are held.
+All the concepts are held. (TODO?)
 
 Block ciphers contains pre-defined [`block::accumulator_set`](@ref nil::crypto3::block::accumulator_set), 
 which is a `boost::accumulator_set` with pre-filled 
@@ -311,7 +311,7 @@ boost::accumulator_set<
     accumulators::hash<hashes::sha2<256>>> acc;
 ```
 
-Extraction is supposed to be defined as follows:
+(TODO) Extraction is supposed to be defined as follows:
 ```cpp
 std::string hash = extract::hash<hashes::sha2<256>>(acc);
 std::string ciphertext = extract::block<block::rijndael<128, 128>>(acc);
