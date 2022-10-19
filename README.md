@@ -1,7 +1,27 @@
 # Block Ciphers for =nil; Foundation's Cryptography Suite
 [![Build Status](https://travis-ci.com/NilFoundation/block.svg?branch=master)](https://travis-ci.com/NilFoundation/block)
 
-Block ciphers for =nil; Foundation's cryptography suite.
+Crypto3 Block cipher library extends the =nil; Foundation's cryptography suite. The library
+implements common block cipher implementations such as aes, shacal.. The library supports
+API to encrypt/decrypt data and supports streaming data as input via supporting accumulators
+from boost library.
+
+
+## Repository structure
+```
+root
+├── cmake: cmake sub-module with helper functions/macros to build crypto3 library umbrella-repository
+├── docs: documentation , tutorials and guides
+├── test: Unit test cases
+├── include/nil/crypto3: Library source 
+│   ├── block : block cipher impmentation
+│   │   ├── accumulators: implemtation of accumulators used internally
+│   │   ├── adaptor: TODO
+│   │   ├── algorithm: encryption/decryption algorithms
+│   │   ├── detail: helper functions, constants , misc common utils. 
+│   ├── detail : helper functions, constants , misc common utils.
+```
+
 
 ## Building
 
